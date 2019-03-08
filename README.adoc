@@ -1,0 +1,172 @@
+= mill-avro - Build avro Bundles with mill
+:mill-min-version: 0.3.6
+:mill-avro-version: 0.0.6
+:toc:
+:toc-placement: preamble
+
+Plug-in to build avro bundles with the https://github.com/lihaoyi/mill[mill build tool]
+
+== Quickstart
+
+.File: `build.sc`
+[source,scala,subs="verbatim,attributes"]
+----
+// build.sc default imports
+import mill._, mill.scalalib._
+// This import the mill-avro plugin
+import $ivy.`de.tototec::de.tobiasroeser.mill.avro:{mill-avro-version}`
+import de.tobiasroeser.mill.avro._
+
+object project extends ScalaModule with avroBundleModule {
+
+  def bundleSymbolicName = "com.example.project"
+
+  def avroHeaders = T{ super.avroHeaders().copy(
+    `Export-Package`   = Seq("com.example.api"),
+    `Bundle-Activator` = Some("com.example.internal.Activator")
+  )}
+
+  // other settings ...
+
+}
+----
+
+Use mill {mill-min-version} or newer, to build the avro bundle.
+
+----
+$ mill project.avroBundle
+[27/38] project.compile
+[info] Compiling 1 Scala source to /tmp/project/out/project/compile/dest/classes ...
+[info] Done compiling.
+[38/38] project.avroBundle
+----
+
+Please note, that the default `jar` target is also overriden,
+so that it depends on `avroBundle` and in fact it returns the exact same bundle.
+
+----
+$ mill show project.jar
+[1/1] show
+[39/39] project.jar
+"ref:14551bd1:/tmp/project/out/project/avroBundle/dest/out.jar"
+----
+
+== Configuration
+
+To produce avro bundles, your module has to implement link:core/src/de/tobiasroeser/mill/avro/avroBundleModule.scala[`de.tobiasroeser.mill.avro.avroBundleModule`].
+
+.Configuration options
+* `def bundleVersion: T[String]` -
+  The bundle version.
+  If the module is a `PublishModule`, it defaults to `PublishModule.publishVersion`.
+
+* `def bundleSymbolicName: T[String]` -
+  The bundle symbolic name.
+  If the module is a `PublishModule`, it derives a default from from `PublishModule.artifactMetadata`.
+
+* `def reproducibleBundle: T[Boolean]` -
+  Create a reproducible bundle file.
+  To achieve that, some properties of the resulting JAR will be adjusted, e.g. sorted manifest and JAR entries, unified file create time, etc.
+  Defaults to `true`.
+
+* `def embeddedJars: T[Seq[PathRef]]` -
+  Embed these JAR files and also add them to the bundle classpath.
+
+* `def explodedJars: T[Seq[PathRef]]` -
+  Embed the content of the given JAR files into the bundle.
+
+* `def avroHeaders: T[avroHeaders]` -
+  Various avro headers defining the avro bundle.
+  You should always use `avroHeaders.copy` to customize some headers to not loose useful defaults.
+
+* `def includeSources: T[Boolean]` -
+  Iff `true` include sources in the final bundle under `avro-OPT/src`.
+  Defaults to `false`.
+
+* `def includeResource: T[Seq[String]]` -
+  Resources to include into the final bundle.
+ Defaults to include resources defined with `JavaModule.resources`.
+
+* `def additionalHeaders: T[Map[String, String]]` -
+  Additional headers to add to the bundle manifest.
+  All headers added here will be applied after `avroHeaders` and thus override previously defined values.
+  Be careful to not add standard avro headers here, but via `avroHeaders`.
+
+* `def avroBundle: T[PathRef]` -
+  Build the avro Bundle.
+
+
+== Defaults
+
+By default mill-avro tries to provide some sensible default values based on the current build setup.
+
+=== `Export-Package` and `Private-Package`
+
+By default, all output packages of the `compile` task will be added to the `Private-Package` header.
+No packages will be exported via `Export-Package`.
+
+=== `Bundle-SymbolicName`
+
+If the module does not extends `PublishModule`, the bundle symbolic name will be initializes with `JavaModule.artifactName`.
+
+If the module extends `PublishModule`, the `Bundle-SymbolicName` is computed using from `PublishModule.pomSettings.organization` and `JavaModule.artifactName`.
+If the organization or the last segment of the organization is a prefix of the artifactName, than that redundant part is omited.
+
+
+== License
+
+Apache License, version 2
+
+== Version Compatibility Matrix
+
+Mill is still in active development, and has no stable API yet.
+Hence, not all mill-avro versions work with every mill version.
+
+The following table shows a matrix of compatible mill and mill-avro versions.
+
+.Version Compatibility Matrix
+[options="header"]
+|===
+| mill-avro | mill
+| 0.0.1 | 0.2.8
+| 0.0.2 | 0.2.8
+| 0.0.3 | 0.3.2
+| 0.0.4 | 0.3.2
+| 0.0.5 | 0.3.5
+| 0.0.6 | 0.3.6
+|===
+
+== Changelog
+
+=== mill-avro 0.0.6 - 2019-02-15
+
+* Version bump to mill-0.3.6 and use of new mill-api
+* Improved integration test setup
+* Added runtime detection of possibly incompatible mill runtime version
+
+=== mill-avro 0.0.5 - 2018-12-14
+
+* Reworked integration test setup
+* Version bump to mill-0.3.5 and use of os-lib
+
+=== mill-avro 0.0.4 - 2018-11-20
+
+* Added explicit scala-library dependency to released pom.xml
+
+=== mill-avro 0.0.3 - 2018-11-02
+
+* Changed packaging / pom dependency information so that loading
+  into mill excludes mill dependencies
+
+=== mill-avro 0.0.2 - 2018-10-18
+
+* Improved default bundle symbolic name algorithm
+* Added support for -includeresource
+* Improved source docs
+* Don't add non-existing resources to avoid bnd warnings/errors
+* Add more default headers when project is a `PublishModule` 
+
+=== mill-avro 0.0.1 - 2018-10-10
+
+* Initial early release to gain user feedback
+
