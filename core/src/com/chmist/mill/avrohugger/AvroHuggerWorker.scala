@@ -1,4 +1,4 @@
-package com.chmist.mill.avrolib
+package com.chmist.mill.avrohugger
 
 import java.io.File
 
@@ -16,8 +16,9 @@ class AvroWorker {
       case Some((sig, instance)) if sig == classloaderSig => instance
       case _ =>
         val instance = new AvroWorkerApi {
-          override def compileAvro(source: File, avroOptions: String, generatedDirectory: File): Unit = {
-            Jvm.runSubprocess("avrohugger.tool.Main", avroClasspath, mainArgs = Seq("generate", "schema", source.getCanonicalPath, generatedDirectory.getCanonicalPath))
+          override def compileAvro(sources: Seq[File], generatedDirectory: File): Unit = {
+            val args: Seq[String] = Seq("generate", "schema") ++ sources.map(_.getCanonicalPath) ++ Seq(generatedDirectory.getCanonicalPath)
+            Jvm.runSubprocess("avrohugger.tool.Main", avroClasspath, mainArgs = args)
           }
         }
         avroInstanceCache = Some((classloaderSig, instance))
@@ -26,19 +27,14 @@ class AvroWorker {
   }
 
 
-  def compile(avroClasspath: Agg[os.Path], avroSources: Seq[os.Path], avroOptions: String, dest: os.Path)
+  def compile(avroClasspath: Agg[os.Path], avroSources: Seq[os.Path], dest: os.Path)
              (implicit ctx: mill.api.Ctx): mill.api.Result[PathRef] = {
     val compiler = avro(avroClasspath)
 
     def compileAvroDir(inputDir: os.Path) {
-      // ls throws if the path doesn't exist
-      println(inputDir)
       if (inputDir.toIO.exists) {
-        os.walk(inputDir).filter(_.last.matches(".*.avsc"))
-          .foreach { proto =>
-          println(dest.toIO)
-            compiler.compileAvro(proto.toIO, avroOptions, dest.toIO)
-          }
+        val sources = os.walk(inputDir).filter(_.last.matches(".*\\.avsc"))
+        compiler.compileAvro(sources.map(_.toIO), dest.toIO)
       }
     }
     avroSources.foreach(compileAvroDir)
@@ -47,7 +43,7 @@ class AvroWorker {
 }
 
 trait AvroWorkerApi {
-  def compileAvro(source: File, avroOptions: String, generatedDirectory: File)
+  def compileAvro(sources: Seq[File], generatedDirectory: File)
 }
 
 object AvroWorkerApi {

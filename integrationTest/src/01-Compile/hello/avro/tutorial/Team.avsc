@@ -1,0 +1,18 @@
+{
+  "namespace": "com.example.domain",
+  "type": "record",
+  "name": "Team",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "members",
+      "type": {
+        "type": "array",
+        "items": "com.example.domain.Person"
+      }
+    }
+  ]
+}

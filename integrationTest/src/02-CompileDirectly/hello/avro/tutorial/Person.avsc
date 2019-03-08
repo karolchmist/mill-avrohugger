@@ -1,0 +1,9 @@
+{
+  "namespace": "com.example.domain",
+  "type": "record",
+  "name": "Person",
+  "fields": [
+    { "name": "name", "type": "string"},
+    { "name": "age", "type": "int"}
+  ]
+}
