@@ -1,3 +1,5 @@
+image:https://travis-ci.org/karolchmist/mill-avrohugger.svg?branch=master["Build Status", link="https://travis-ci.org/karolchmist/mill-avrohugger"]
+
 = mill-avrohugger - Build avro Bundles with mill
 :mill-min-version: 0.3.6
 :avrohugger-version: 1.0.0-RC15
