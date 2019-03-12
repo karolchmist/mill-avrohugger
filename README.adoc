@@ -7,7 +7,7 @@ image:https://travis-ci.org/karolchmist/mill-avrohugger.svg?branch=master["Build
 :toc:
 :toc-placement: preamble
 
-Module to convert avro schemas to scala classes with the https://github.com/lihaoyi/mill[mill build tool]
+Module to convert avro schemas to scala classes with https://github.com/julianpeeters/avrohugger[AvroHugger] and https://github.com/lihaoyi/mill[mill build tool]
 
 == Quickstart
 
@@ -36,14 +36,14 @@ Input files to compile:
 
 == Configuration
 
-To convert avro schemas, your module has to implement link:core/src/com/chmist/mill/avro/AvroModule.scala[`com.chmist.mill.avro.AvroModule`].
+To convert avro schemas, your module has to implement link:core/src/com/chmist/mill/avro/AvroHuggerModule.scala[`com.chmist.mill.avro.AvroModule`].
 
 .Configuration options
 * `def avroHuggerVersion: T[String]` -
   The avrohugger version. By default it is {avrohugger-version}
 
 * `def avroSources: Sources` -
-  The source folder for avro schemas.
+  The source folder for avro schemas. By default it is `avro`.
 
 
 == License
