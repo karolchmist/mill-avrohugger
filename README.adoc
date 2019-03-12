@@ -36,7 +36,7 @@ Input files to compile:
 
 == Configuration
 
-To convert avro schemas, your module has to implement link:core/src/com/chmist/mill/avro/AvroHuggerModule.scala[`com.chmist.mill.avro.AvroModule`].
+To convert avro schemas, your module has to implement link:core/src/com/chmist/mill/avrohugger/AvroHuggerModule.scala[`com.chmist.mill.avro.AvroHuggerModule`].
 
 .Configuration options
 * `def avroHuggerVersion: T[String]` -
